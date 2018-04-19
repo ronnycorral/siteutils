@@ -32,6 +32,7 @@ func DisplayableName(name string, modifier int) string {
 	//        "Bach, Johann Sebastian" -> "Johann Sebastian Bach"
 	// 4 - add "The " at beginning
 	//        "Velvet Underground" -> "The Velvet Underground"
+
 	if modifier == 4 {
 		return fmt.Sprintf("The %s", name)
 	} else if modifier == 1 {
@@ -61,6 +62,7 @@ func IsAlphaNumeric(s string) bool {
 func TruncateString(str string, maxLen int) string {
 	// TruncateString - truncates artist name so hopefully it's not wider than the cover image
 	// maxLen is usually 11
+
 	shortString := str
 	if len(str) > maxLen {
 		shortString = str[0:maxLen-3] + "..."
