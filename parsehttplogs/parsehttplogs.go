@@ -133,6 +133,9 @@ func main() {
 	logLineRegExp := "([(\\d\\.)]+) - - \\[(" + yesterdaysDate + ".*?) \\+0000\\] \"GET (.*?) HTTP/1.\\d\" (\\d+)"
 	r, _ := regexp.Compile(logLineRegExp)
 
+	// excludeList - Excludes things I don't care about or traffic where I'm not interested in
+	excludeList := ".jpg |.gif |.png |.css |.js |.ico |robots.txt|searchme.html|54.172.87.69|76.126.34.55"
+
 	logFiles := LogFileList()
 
 	db := common.OpenDB()
@@ -158,23 +161,21 @@ func main() {
 		for singleLogLine.Scan() {
 			if logLineValues := r.FindStringSubmatch(singleLogLine.Text()); len(logLineValues) != 0 {
 
-				// Not thrilled with how I'm doing this but couldn't think of another way that works
-				// the exclude list is a bunch of pages I don't want to track and IP address of corral.com and home
-				excludeList := ".jpg |.gif |.png |.css |.js |.ico |robots.txt|searchme.html|54.172.87.69|76.126.34.55"
 				r2, _ := regexp.Compile(excludeList)
-				if excludedValues := r2.FindStringSubmatch(singleLogLine.Text()); len(excludedValues) == 0 {
-					// If I already have GEO info for an IP I don't need to get it again
-					if _, keyExists := geoFromIP[logLineValues[1]]; !keyExists {
-						countryCode, regionCode := RegionCodes(logLineValues[1])
-						geoFromIP[logLineValues[1]] = LocationCodesFromIP{countryCode, regionCode}
-					}
-					countryCode := geoFromIP[logLineValues[1]].CountryCode
-					regionCode := geoFromIP[logLineValues[1]].RegionCode
-					request := sanitizeRequest(logLineValues[3])
-					_, err := stmt.Exec(logLineValues[1], logLineValues[2], request, logLineValues[4], countryCode, regionCode)
-					if err != nil {
-						log.Fatal(err)
-					}
+				if excludedValues := r2.FindStringSubmatch(singleLogLine.Text()); len(excludedValues) != 0 {
+					continue;
+				}
+				// If I already have GEO info for an IP I don't need to get it again
+				if _, keyExists := geoFromIP[logLineValues[1]]; !keyExists {
+					countryCode, regionCode := RegionCodes(logLineValues[1])
+					geoFromIP[logLineValues[1]] = LocationCodesFromIP{countryCode, regionCode}
+				}
+				countryCode := geoFromIP[logLineValues[1]].CountryCode
+				regionCode := geoFromIP[logLineValues[1]].RegionCode
+				request := sanitizeRequest(logLineValues[3])
+				_, err := stmt.Exec(logLineValues[1], logLineValues[2], request, logLineValues[4], countryCode, regionCode)
+				if err != nil {
+					log.Fatal(err)
 				}
 			}
 		}
