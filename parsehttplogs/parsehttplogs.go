@@ -1,4 +1,5 @@
 package main
+
 /*
 Parses logs for corral.com and all the other domains since they use the same logs.
 
@@ -28,20 +29,21 @@ import (
 	"siteutils/common"
 )
 
-// structure used for parsing GEO location json
+// LocationCodes - structure used for parsing GEO location json
 type LocationCodes struct {
-        GeoCountryCode string `json:"countryCode"`
-        GeoRegionCode string `json:"region"`
+	GeoCountryCode string `json:"countryCode"`
+	GeoRegionCode  string `json:"region"`
 }
 
+// LocationCodesFromIP - used for list of IPs i've already got GEO info for
 type LocationCodesFromIP struct {
-    CountryCode string
-    RegionCode  string
+	CountryCode string
+	RegionCode  string
 }
 
 func sanitizeRequest(originalRequest string) string {
-// I think I relplace the single quotes to solve some MySQL issue. I don't remember
-// what breaks when if I leave this out. Truncating is just because of column size
+	// sanitizeRequest - I think I relplace the single quotes to solve some MySQL issue. I don't remember
+	// what breaks when if I leave this out. Truncating is just because of column size
 
 	request := strings.Replace(originalRequest, "'", "\\'", -1)
 	if len(request) > 250 {
@@ -52,7 +54,7 @@ func sanitizeRequest(originalRequest string) string {
 }
 
 func LogFileList() []string {
-// returns list of log files to parse through
+	// LogFileList - returns list of log files to parse through
 
 	yyyymmddFmt := "20060102"
 	todaysDate := time.Now().Format(yyyymmddFmt)
@@ -77,34 +79,34 @@ func LogFileList() []string {
 }
 
 func RegionCodes(ipAddress string) (string, string) {
-// Calls an API that returns GEO info about an IP address. I only use the country and region codes
+	// Calls an API that returns GEO info about an IP address. I only use the country and region codes
 
-        geoURL := "http://ip-api.com/json/" + ipAddress
+	geoURL := "http://ip-api.com/json/" + ipAddress
 
-        geoClient := http.Client{
-                Timeout: time.Second * 2, // Maximum of 2 secs
-        }
+	geoClient := http.Client{
+		Timeout: time.Second * 2, // Maximum of 2 secs
+	}
 
-        req, err := http.NewRequest(http.MethodGet, geoURL, nil)
-        if err != nil {
-                log.Fatal(err)
-        }
+	req, err := http.NewRequest(http.MethodGet, geoURL, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-        res, getErr := geoClient.Do(req)
-        if getErr != nil {
-                log.Fatal(getErr)
-        }
+	res, getErr := geoClient.Do(req)
+	if getErr != nil {
+		log.Fatal(getErr)
+	}
 
-        body, readErr := ioutil.ReadAll(res.Body)
-        if readErr != nil {
-                log.Fatal(readErr)
-        }
+	body, readErr := ioutil.ReadAll(res.Body)
+	if readErr != nil {
+		log.Fatal(readErr)
+	}
 
-        geoCodes := LocationCodes{}
-        jsonErr := json.Unmarshal(body, &geoCodes)
-        if jsonErr != nil {
-                log.Fatal(jsonErr)
-        }
+	geoCodes := LocationCodes{}
+	jsonErr := json.Unmarshal(body, &geoCodes)
+	if jsonErr != nil {
+		log.Fatal(jsonErr)
+	}
 
 	if geoCodes.GeoRegionCode == "" {
 		geoCodes.GeoRegionCode = "Unknown"
@@ -113,29 +115,28 @@ func RegionCodes(ipAddress string) (string, string) {
 	if geoCodes.GeoCountryCode == "" {
 		geoCodes.GeoCountryCode = "Unknown"
 	}
-        // Total hack - put here because public API will block me if I spam them.
-        // Since this is a batch job that runs once a day I'm OK with it.
-        time.Sleep(1 * time.Second)
+	// Total hack - put here because public API will block me if I spam them.
+	// Since this is a batch job that runs once a day I'm OK with it.
+	time.Sleep(1 * time.Second)
 
-        return geoCodes.GeoCountryCode, geoCodes.GeoRegionCode
+	return geoCodes.GeoCountryCode, geoCodes.GeoRegionCode
 }
-
 
 func main() {
 
-	geoFromIP := make(map[string] LocationCodesFromIP)
+	geoFromIP := make(map[string]LocationCodesFromIP)
 
 	// Build up regex to get yesterdays data from and get submatches
 	// sub matches: 1 - ip, 2 - time, 3 - request, 4 - result
 	ddmonyyyyFmt := "02/Jan/2006"
 	yesterdaysDate := time.Now().AddDate(0, 0, -1).Format(ddmonyyyyFmt)
 	logLineRegExp := "([(\\d\\.)]+) - - \\[(" + yesterdaysDate + ".*?) \\+0000\\] \"GET (.*?) HTTP/1.\\d\" (\\d+)"
-        r, _ := regexp.Compile(logLineRegExp)
+	r, _ := regexp.Compile(logLineRegExp)
 
 	logFiles := LogFileList()
 
 	db := common.OpenDB()
-        defer db.Close()
+	defer db.Close()
 
 	stmt, err := db.Prepare("INSERT INTO logdatatest (ip,requestDate,request,responseCode,CountryCode,regionCode) VALUES (?, STR_TO_DATE(?,'%d/%b/%Y:%T'), ?, ?, ?, ?)")
 	if err != nil {
@@ -146,7 +147,7 @@ func main() {
 
 		fileP, err := os.Open(logFile)
 		if err != nil {
-		        log.Fatal(err)
+			log.Fatal(err)
 		}
 		defer fileP.Close()
 
@@ -155,13 +156,13 @@ func main() {
 			log.Fatal(err)
 		}
 		for singleLogLine.Scan() {
-			if logLineValues := r.FindStringSubmatch(singleLogLine.Text()) ; len(logLineValues) != 0  {
+			if logLineValues := r.FindStringSubmatch(singleLogLine.Text()); len(logLineValues) != 0 {
 
 				// Not thrilled with how I'm doing this but couldn't think of another way that works
 				// the exclude list is a bunch of pages I don't want to track and IP address of corral.com and home
 				excludeList := ".jpg |.gif |.png |.css |.js |.ico |robots.txt|searchme.html|54.172.87.69|76.126.34.55"
-			        r2, _ := regexp.Compile(excludeList)
-				if excludedValues := r2.FindStringSubmatch(singleLogLine.Text()) ; len(excludedValues) == 0  {
+				r2, _ := regexp.Compile(excludeList)
+				if excludedValues := r2.FindStringSubmatch(singleLogLine.Text()); len(excludedValues) == 0 {
 					// If I already have GEO info for an IP I don't need to get it again
 					if _, keyExists := geoFromIP[logLineValues[1]]; !keyExists {
 						countryCode, regionCode := RegionCodes(logLineValues[1])
@@ -171,7 +172,7 @@ func main() {
 					regionCode := geoFromIP[logLineValues[1]].RegionCode
 					request := sanitizeRequest(logLineValues[3])
 					_, err := stmt.Exec(logLineValues[1], logLineValues[2], request, logLineValues[4], countryCode, regionCode)
-					if err != nil { 
+					if err != nil {
 						log.Fatal(err)
 					}
 				}
