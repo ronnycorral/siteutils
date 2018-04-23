@@ -163,7 +163,7 @@ func main() {
 
 				r2, _ := regexp.Compile(excludeList)
 				if excludedValues := r2.FindStringSubmatch(singleLogLine.Text()); len(excludedValues) != 0 {
-					continue;
+					continue
 				}
 				// If I already have GEO info for an IP I don't need to get it again
 				if _, keyExists := geoFromIP[logLineValues[1]]; !keyExists {
