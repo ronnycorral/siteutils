@@ -90,7 +90,7 @@ func main() {
 		case "random":
 			htmlCode.WriteString(fmt.Sprintf("<li><a href=\"/cdcoll.php?artist_id=%d\"><img class=\"roundcorner\" src=\"%s\" height=\"64\" width=\"64\" alt=\"%s\" title=\"%s\"></a><p>%s</p></li>\n", artistid, path_to_cover, print_this_title, print_this_title, print_this_name))
 		case "latest":
-			htmlCode.WriteString(fmt.Sprintf("<li><img class=\"roundcorner imagepointer\" src=\"%s\" height=\"64\" width=\"64\" alt=\"%s\" title=\"%s\" onclick=\"getArtistData(%d,'%s')\"><p>\"%s\"</p></li>\n", path_to_cover, print_this_title, print_this_title, artistid, domain, print_this_name))
+			htmlCode.WriteString(fmt.Sprintf("<li><img class=\"roundcorner imagepointer\" src=\"%s\" height=\"64\" width=\"64\" alt=\"%s\" title=\"%s\" onclick=\"getArtistData(%d,'%s')\"><p>%s</p></li>\n", path_to_cover, print_this_title, print_this_title, artistid, domain, print_this_name))
 		}
 	}
 	// This section needs to be updated to include error checking and first writing to temp file so I don't blow
