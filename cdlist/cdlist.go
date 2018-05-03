@@ -85,7 +85,7 @@ func main() {
 		}
 		print_this_name := html.EscapeString(common.TruncateString(common.DisplayableName(cdartist, namemodifier), 11))
 		print_this_title := html.EscapeString(cdtitle)
-		path_to_cover := html.EscapeString(fmt.Sprintf("/images/covers/%s/%s", coverfile[0:1], coverfile))
+		path_to_cover := html.EscapeString(fmt.Sprintf("/images/cdcovers/%s/%s", coverfile[0:1], coverfile))
 		switch listType {
 		case "random":
 			htmlCode.WriteString(fmt.Sprintf("<li><a href=\"/cdcoll.php?artist_id=%d\"><img class=\"roundcorner\" src=\"%s\" height=\"64\" width=\"64\" alt=\"%s\" title=\"%s\"></a><p>%s</p></li>\n", artistid, path_to_cover, print_this_title, print_this_title, print_this_name))
