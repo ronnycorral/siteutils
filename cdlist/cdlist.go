@@ -3,19 +3,17 @@ package main
 // Creates the files that contain the html that displays 3 CD covers based on the type of list
 // It's either 3 random covers or the 3 CDs that have the latest date_added
 
-// standard packages
 import (
+	// standard packages
 	"bytes"
 	"flag"
 	"fmt"
 	"html"
 	"log"
 	"os"
-)
 
-// packages written by me
-import (
-	"siteutils/common"
+	// packages written by me
+	"common"
 )
 
 func main() {

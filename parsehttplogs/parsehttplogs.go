@@ -11,8 +11,8 @@ I look through those files and grab everything that has yesterdays date. This wo
 After I parse everything I get the country code from the IP address so I can map that info for the traffic map.
 */
 
-// Standard packages
 import (
+	// Standard packages
 	"bufio"
 	"encoding/json"
 	"io/ioutil"
@@ -22,11 +22,9 @@ import (
 	"regexp"
 	"strings"
 	"time"
-)
 
-// My packages
-import (
-	"siteutils/common"
+	// My packages
+	"common"
 )
 
 // LocationCodes - structure used for parsing GEO location json
