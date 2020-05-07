@@ -1,6 +1,8 @@
 package main
 
 /*
+DEPRECATED - replaced by lambda functions and Kinesis Firehose
+
 Parses logs for corral.com and all the other domains since they use the same logs.
 
 This is meant to be run once a day. I run it shortly after midnight. If run more than once you'll get duplicate data
