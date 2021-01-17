@@ -1,0 +1,71 @@
+#!/usr/bin/python
+
+'''
+url for submitting sitemap to bing
+http://www.bing.com/ping?sitemap=http%3A%2F%2Fwww.corral.com/corralsitemap.xml
+
+In robots.txt put:
+User-agent: EasouSpider
+Disallow: /
+
+User-agent: *
+Disallow:
+
+Sitemap: http://corral.com/corralsitemap.xml
+'''
+
+import sys
+import MySQLdb
+import os
+
+if len(sys.argv) > 1:
+   domain = sys.argv[1]
+else:
+   print ("Enter the domain:"),
+   domain = raw_input()
+
+base_dir = "/var/www/"
+
+sitemap_loc = base_dir + domain + "/" + domain + "sitemap.xml"
+
+user = os.environ['DBUSER']
+passwd = os.environ['DBPASS']
+db = os.environ['DBNAME']
+
+conn = MySQLdb.connect (host = "localhost",
+                           user = user,
+                           passwd = passwd,
+                           db = db)
+cursor = conn.cursor()
+
+cursor.execute("SELECT artist_id FROM cdartist")
+
+
+sitemapfile = open(sitemap_loc, 'w')
+sitemapfile.write("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n")
+
+
+row = cursor.fetchone()
+while row is not None:
+   myartist_id = row[0]
+   link_line = "<url><loc>http://" + domain + ".com/cdcoll.php?artist_id=" + str(myartist_id) + "</loc></url>\n"
+   sitemapfile.write(link_line)
+   row = cursor.fetchone()
+
+link_line = "<url><loc>http://" + domain + ".com</loc></url>\n"
+sitemapfile.write(link_line)
+link_line = "<url><loc>http://" + domain + ".com/searchsite.php</loc></url>\n"
+sitemapfile.write(link_line)
+link_line = "<url><loc>http://" + domain + ".com/charts.php</loc></url>\n"
+sitemapfile.write(link_line)
+link_line = "<url><loc>http://" + domain + ".com/stbooks.php</loc></url>\n"
+sitemapfile.write(link_line)
+link_line = "<url><loc>http://" + domain + ".com/colophon.php</loc></url>\n"
+sitemapfile.write(link_line)
+link_line = "<url><loc>http://" + domain + ".com/hamilton.php</loc></url>\n"
+sitemapfile.write(link_line)
+sitemapfile.write("</urlset>\n")
+cursor.close()
+conn.close()
+sitemapfile.close()
+

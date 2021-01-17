@@ -1,0 +1,24 @@
+#!/bin/bash
+domain=$1
+
+if [ -z "$domain" ]
+  then
+    echo "Usage: $(basename "$0") domain"
+    exit
+fi
+
+date
+echo $domain
+
+
+if [ ! -e "/var/www/$domain" ]
+  then
+    echo "The domain $domain does not exist on this server"
+    exit
+fi
+
+/home/ec2-user/bin/makesearchme.py $domain
+
+/usr/local/bin/swish-e -S prog -c /var/www/swish/$domain/swish.conf
+
+mv /var/www/$domain/searchme.html /var/www/swish/$domain/
